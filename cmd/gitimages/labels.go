@@ -18,12 +18,12 @@ type LabelIdentifier struct {
 func NewLabelIdentifier(image, label string) (*LabelIdentifier, error) {
 	repo, err := name.NewRepository(image)
 	if err != nil {
-		return &LabelIdentifier{}, fmt.Errorf("unable to parse image %q: %w", image, err)
+		return nil, fmt.Errorf("unable to parse image %q: %w", image, err)
 	}
 
 	tags, err := remote.List(repo)
 	if err != nil {
-		return &LabelIdentifier{}, fmt.Errorf("unable to get tags for %q: %w", image, err)
+		return nil, fmt.Errorf("unable to get tags for %q: %w", image, err)
 	}
 	return &LabelIdentifier{
 		Label:     label,
