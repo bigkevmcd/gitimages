@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -32,20 +31,21 @@ func (i ImageIdentifier) FindMostRecentImage(ctx context.Context, r *git.Reposit
 		return "", fmt.Errorf("failed to get commit objects from repository: %w", err)
 	}
 
-	foundImage := ""
-	foundErr := errors.New("marker error")
+	var foundImage string
 	err = commits.ForEach(func(c *object.Commit) error {
+		if foundImage != "" {
+			return nil // Already found, skip remaining commits
+		}
 		image, err := i.identifier.Identify(ctx, c)
 		if err != nil {
 			return err
 		}
 		if image != "" {
 			foundImage = image
-			return foundErr
 		}
 		return nil
 	})
-	if err != foundErr {
+	if err != nil {
 		return "", err
 	}
 	return foundImage, nil
