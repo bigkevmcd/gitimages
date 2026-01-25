@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -14,21 +15,21 @@ type TagPrefixIdentifier struct {
 	tags   []string
 }
 
-func NewTagPrefixIdentifier(image, prefix string) (TagPrefixIdentifier, error) {
+func NewTagPrefixIdentifier(ctx context.Context, image, prefix string) (*TagPrefixIdentifier, error) {
 	sourceRepo, err := name.NewRepository(image)
 	if err != nil {
-		return TagPrefixIdentifier{}, fmt.Errorf("unable to parse image %q: %w", image, err)
+		return nil, fmt.Errorf("unable to parse image %q: %w", image, err)
 	}
 
-	tags, err := remote.List(sourceRepo)
+	tags, err := remote.List(sourceRepo, remote.WithContext(ctx))
 	if err != nil {
-		return TagPrefixIdentifier{}, fmt.Errorf("unable to get tags for %q: %w", image, err)
+		return nil, fmt.Errorf("unable to get tags for %q: %w", image, err)
 	}
 
-	return TagPrefixIdentifier{Prefix: prefix, tags: tags}, nil
+	return &TagPrefixIdentifier{Prefix: prefix, tags: tags}, nil
 }
 
-func (t TagPrefixIdentifier) Identify(c *object.Commit) (string, error) {
+func (t *TagPrefixIdentifier) Identify(ctx context.Context, c *object.Commit) (string, error) {
 	for _, tag := range t.tags {
 		if strings.HasPrefix(c.Hash.String(), strings.TrimPrefix(tag, t.Prefix)) {
 			return tag, nil

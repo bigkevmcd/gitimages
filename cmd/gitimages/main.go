@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -14,7 +15,7 @@ import (
 const gitLabelKey = "org.opencontainers.image.revision"
 
 type Identifier interface {
-	Identify(c *object.Commit) (string, error)
+	Identify(ctx context.Context, c *object.Commit) (string, error)
 }
 
 type ImageIdentifier struct {
@@ -25,7 +26,7 @@ func NewImageIdentifier(id Identifier) *ImageIdentifier {
 	return &ImageIdentifier{identifier: id}
 }
 
-func (i ImageIdentifier) FindMostRecentImage(r *git.Repository) (string, error) {
+func (i ImageIdentifier) FindMostRecentImage(ctx context.Context, r *git.Repository) (string, error) {
 	commits, err := r.CommitObjects()
 	if err != nil {
 		return "", fmt.Errorf("failed to get commit objects from repository: %w", err)
@@ -34,7 +35,7 @@ func (i ImageIdentifier) FindMostRecentImage(r *git.Repository) (string, error) 
 	foundImage := ""
 	foundErr := errors.New("marker error")
 	err = commits.ForEach(func(c *object.Commit) error {
-		image, err := i.identifier.Identify(c)
+		image, err := i.identifier.Identify(ctx, c)
 		if err != nil {
 			return err
 		}
@@ -51,6 +52,8 @@ func (i ImageIdentifier) FindMostRecentImage(r *git.Repository) (string, error) 
 }
 
 func main() {
+	ctx := context.Background()
+
 	opts := git.CloneOptions{
 		URL:           "https://github.com/bigkevmcd/go-demo",
 		ReferenceName: plumbing.NewBranchReferenceName("master"),
@@ -69,13 +72,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	labelIdentifier, err := NewLabelIdentifier("bigkevmcd/go-demo", gitLabelKey)
+	labelIdentifier, err := NewLabelIdentifier(ctx, "bigkevmcd/go-demo", gitLabelKey)
 	// tagIdentifier, err := NewTagPrefixIdentifier("bigkevmcd/image-updater", "sha-")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	image, err := NewImageIdentifier(labelIdentifier).FindMostRecentImage(repo)
+	image, err := NewImageIdentifier(labelIdentifier).FindMostRecentImage(ctx, repo)
 	if err != nil {
 		log.Fatal(err)
 	}
