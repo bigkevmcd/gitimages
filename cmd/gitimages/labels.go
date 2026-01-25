@@ -33,7 +33,7 @@ func NewLabelIdentifier(image, label string) (*LabelIdentifier, error) {
 	}, nil
 }
 
-func (t LabelIdentifier) Identify(c *object.Commit) (string, error) {
+func (t *LabelIdentifier) Identify(c *object.Commit) (string, error) {
 	for _, tag := range t.tags {
 		if t.tagLabels[tag] == nil {
 			i, err := remote.Image(t.repo.Tag(tag))
@@ -46,10 +46,8 @@ func (t LabelIdentifier) Identify(c *object.Commit) (string, error) {
 			}
 			t.tagLabels[tag] = cfg.Config.Labels
 		}
-		if l := t.tagLabels[tag]; l != nil {
-			if l[t.Label] == c.Hash.String() {
-				return tag, nil
-			}
+		if l[t.Label] == c.Hash.String() {
+			return tag, nil
 		}
 	}
 	return "", nil

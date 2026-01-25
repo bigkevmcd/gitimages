@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -57,7 +56,7 @@ func main() {
 		ReferenceName: plumbing.NewBranchReferenceName("master"),
 	}
 
-	dir, err := ioutil.TempDir("", "gitimages")
+	dir, err := os.MkdirTemp("", "gitimages")
 	if err != nil {
 		log.Fatal(err)
 	}
