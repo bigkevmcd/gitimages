@@ -4,7 +4,7 @@ go 1.25.6
 
 require (
 	github.com/go-git/go-git/v5 v5.17.0
-	github.com/google/go-containerregistry v0.21.0
+	github.com/google/go-containerregistry v0.21.2
 )
 
 require (
