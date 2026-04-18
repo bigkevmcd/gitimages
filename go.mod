@@ -3,7 +3,7 @@ module github.com/bigkevmcd/gitimages
 go 1.25.7
 
 require (
-	github.com/go-git/go-git/v5 v5.17.2
+	github.com/go-git/go-git/v5 v5.18.0
 	github.com/google/go-containerregistry v0.21.5
 )
 
